@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import 'api/api_client.dart';
+import 'api/remote_mappers.dart';
+import 'api/ryse_api.dart';
 import 'demo_data.dart';
 import 'models/models.dart';
 
@@ -59,6 +63,19 @@ class CrmStore extends ChangeNotifier {
   bool _loaded = false;
   bool get isLoaded => _loaded;
 
+  /// When set, the store is backed by the live backend instead of demo data.
+  RyseApi? _api;
+  bool get isServerBacked => _api != null;
+
+  /// Backend pipeline stages, used to map between the app's fixed stage enum
+  /// and the server's dynamic stage rows.
+  List<Map<String, dynamic>> _stages = const [];
+
+  /// Last error from a backend operation, surfaced to the UI as a banner.
+  String? lastError;
+  bool _syncing = false;
+  bool get isSyncing => _syncing;
+
   List<Lead> get leads => List.unmodifiable(_leads);
   List<Contact> get contacts => List.unmodifiable(_contacts);
   List<Account> get accounts => List.unmodifiable(_accounts);
@@ -73,8 +90,24 @@ class CrmStore extends ChangeNotifier {
   // Loading & persistence
   // -------------------------------------------------------------------------
 
+  /// Point the store at a data source. Passing a live [api] switches to
+  /// server mode; passing null returns to local demo data. Safe to call
+  /// repeatedly — it reloads only when the source actually changes.
+  Future<void> connect(RyseApi? api) async {
+    final changed = !identical(_api, api) ||
+        (api == null) != (_api == null);
+    if (!changed && _loaded) return;
+    _api = api;
+    _loaded = false;
+    await load();
+  }
+
   Future<void> load() async {
     if (_loaded) return;
+    if (_api != null) {
+      await _loadFromServer();
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
     if (raw != null) {
@@ -134,8 +167,172 @@ class CrmStore extends ChangeNotifier {
     );
   }
 
+  // -------------------------------------------------------------------------
+  // Server-backed loading
+  // -------------------------------------------------------------------------
+
+  Future<void> _loadFromServer() async {
+    final api = _api!;
+    _syncing = true;
+    lastError = null;
+    notifyListeners();
+    try {
+      _stages = await api.pipelineStages();
+      await Future.wait([
+        _refreshLeads(),
+        _refreshContacts(),
+        _refreshAccounts(),
+        _refreshOpportunities(),
+        _refreshTasks(),
+        _refreshActivities(),
+        _refreshNotifications(),
+      ]);
+    } on ApiException catch (e) {
+      lastError = e.message;
+    } catch (e) {
+      lastError = 'Could not load data from the server. $e';
+    } finally {
+      _syncing = false;
+      _loaded = true;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _refreshLeads() async {
+    final rows = await _api!.leadsList();
+    _leads = rows.map(RemoteMappers.lead).toList();
+  }
+
+  Future<void> _refreshContacts() async {
+    final rows = await _api!.contactsList();
+    _contacts = rows.map(RemoteMappers.contact).toList();
+  }
+
+  Future<void> _refreshAccounts() async {
+    final rows = await _api!.accountsList();
+    _accounts = rows.map(RemoteMappers.account).toList();
+  }
+
+  Future<void> _refreshOpportunities() async {
+    final rows = await _api!.opportunitiesList();
+    _opportunities =
+        rows.map((j) => RemoteMappers.opportunity(j, _resolveStage)).toList();
+  }
+
+  Future<void> _refreshTasks() async {
+    final rows = await _api!.myTasks();
+    _tasks = rows.map(RemoteMappers.task).toList();
+  }
+
+  Future<void> _refreshActivities() async {
+    try {
+      final rows = await _api!.activityFeed(limit: 30);
+      _activities = rows.map(RemoteMappers.activity).toList();
+    } catch (_) {
+      // Activity feed is non-critical; leave whatever we had.
+    }
+  }
+
+  Future<void> _refreshNotifications() async {
+    try {
+      final rows = await _api!.notificationsList();
+      _notifications = rows.map(RemoteMappers.notification).toList();
+    } catch (_) {
+      _notifications = const [];
+    }
+  }
+
+  /// Run a server mutation, refresh the affected collections, and surface any
+  /// error to the UI.
+  Future<void> _runServer(Future<void> Function() action) async {
+    _syncing = true;
+    notifyListeners();
+    try {
+      await action();
+      lastError = null;
+    } on ApiException catch (e) {
+      lastError = e.message;
+    } catch (e) {
+      lastError = 'That action could not be completed. $e';
+    } finally {
+      _syncing = false;
+      notifyListeners();
+    }
+  }
+
+  void clearError() {
+    if (lastError != null) {
+      lastError = null;
+      notifyListeners();
+    }
+  }
+
+  // ── Stage mapping (app enum ↔ backend stage rows) ──
+
+  int _sid(Object? v) =>
+      v is num ? v.toInt() : int.tryParse('$v') ?? -1;
+
+  Map<String, dynamic>? _findStage(bool Function(Map<String, dynamic>) test) {
+    for (final s in _stages) {
+      if (test(s)) return s;
+    }
+    return null;
+  }
+
+  OpportunityStage _resolveStage(int? stageId, bool won, bool lost) {
+    if (won) return OpportunityStage.closedWon;
+    if (lost) return OpportunityStage.closedLost;
+    final stage =
+        stageId == null ? null : _findStage((s) => _sid(s['id']) == stageId);
+    final name = (stage?['name'] ?? '').toString().toLowerCase();
+    if (name.contains('prospect')) return OpportunityStage.prospecting;
+    if (name.contains('qualif')) return OpportunityStage.qualification;
+    if (name.contains('analysis') || name.contains('discov')) {
+      return OpportunityStage.needsAnalysis;
+    }
+    if (name.contains('proposal') || name.contains('quote')) {
+      return OpportunityStage.proposal;
+    }
+    if (name.contains('negoti')) return OpportunityStage.negotiation;
+    if (stage?['isClosedWon'] == true) return OpportunityStage.closedWon;
+    if (stage?['isClosedLost'] == true) return OpportunityStage.closedLost;
+    return OpportunityStage.qualification;
+  }
+
+  int? _stageIdFor(OpportunityStage stage) {
+    Map<String, dynamic>? match;
+    bool named(Map<String, dynamic> s, String kw) =>
+        (s['name'] ?? '').toString().toLowerCase().contains(kw);
+
+    switch (stage) {
+      case OpportunityStage.closedWon:
+        match = _findStage((s) => s['isClosedWon'] == true);
+      case OpportunityStage.closedLost:
+        match = _findStage((s) => s['isClosedLost'] == true);
+      case OpportunityStage.negotiation:
+        match = _findStage((s) => named(s, 'negoti'));
+      case OpportunityStage.proposal:
+      case OpportunityStage.needsAnalysis:
+        match = _findStage((s) => named(s, 'proposal') || named(s, 'analysis'));
+      case OpportunityStage.qualification:
+      case OpportunityStage.prospecting:
+        match = _findStage((s) => named(s, 'qualif') || named(s, 'prospect'));
+    }
+    match ??= _findStage(
+      (s) => s['isClosedWon'] != true && s['isClosedLost'] != true,
+    );
+    match ??= _stages.isNotEmpty ? _stages.first : null;
+    return match == null ? null : _sid(match['id']);
+  }
+
+  int? _backendId(String appId) => RemoteMappers.backendId(appId);
+
   /// Reset all data back to the demo seed.
   Future<void> resetDemoData() async {
+    if (isServerBacked) {
+      await _loadFromServer();
+      return;
+    }
     _seed();
     _notifications = DemoData.notifications();
     await _persist();
@@ -213,6 +410,13 @@ class CrmStore extends ChangeNotifier {
   // -------------------------------------------------------------------------
 
   void addLead(Lead lead) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.leadCreate(RemoteMappers.leadCreateInput(lead));
+        await _refreshLeads();
+      }));
+      return;
+    }
     _leads.insert(0, lead);
     _logActivity(
       kind: ActivityKind.created,
@@ -226,6 +430,13 @@ class CrmStore extends ChangeNotifier {
   }
 
   void updateLead(Lead lead, {bool log = true}) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.leadUpdate(RemoteMappers.leadUpdateInput(lead));
+        await _refreshLeads();
+      }));
+      return;
+    }
     final index = _leads.indexWhere((e) => e.id == lead.id);
     if (index == -1) return;
     final previous = _leads[index];
@@ -243,13 +454,28 @@ class CrmStore extends ChangeNotifier {
   }
 
   void deleteLead(String id) {
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.leadDelete(backendId);
+        await _refreshLeads();
+      }));
+      return;
+    }
     _leads.removeWhere((e) => e.id == id);
     _commit();
   }
 
   /// Salesforce-style conversion: lead becomes contact + account +
   /// opportunity in a single step.
-  LeadConversionResult convertLead(Lead lead, {double? opportunityAmount}) {
+  Future<LeadConversionResult?> convertLead(
+    Lead lead, {
+    double? opportunityAmount,
+  }) async {
+    if (isServerBacked) {
+      return _convertLeadServer(lead, opportunityAmount);
+    }
     final now = DateTime.now();
 
     var account = _accounts
@@ -330,11 +556,74 @@ class CrmStore extends ChangeNotifier {
     );
   }
 
+  Future<LeadConversionResult?> _convertLeadServer(
+    Lead lead,
+    double? opportunityAmount,
+  ) async {
+    final leadId = _backendId(lead.id);
+    if (leadId == null) return null;
+    LeadConversionResult? result;
+    await _runServer(() async {
+      final existingAccount = _accounts
+          .where((a) => a.name.toLowerCase() == lead.company.toLowerCase())
+          .firstOrNull;
+      final stageId = _stageIdFor(OpportunityStage.qualification);
+      final input = <String, dynamic>{
+        'leadId': leadId,
+        'opportunityName': '${lead.company.isEmpty ? lead.name : lead.company}'
+            ' — New Business',
+        'dealValue': opportunityAmount ?? (lead.annualRevenue * 0.002),
+        'currency': 'USD',
+        if (stageId != null) 'stageId': stageId,
+        'createContact': true,
+      };
+      final existingId = existingAccount == null
+          ? null
+          : _backendId(existingAccount.id);
+      if (existingId != null) {
+        input['accountId'] = existingId;
+      } else {
+        input['accountName'] =
+            lead.company.isEmpty ? '${lead.name} Co.' : lead.company;
+      }
+      final res = await _api!.leadConvert(input);
+
+      await Future.wait([
+        _refreshLeads(),
+        _refreshContacts(),
+        _refreshAccounts(),
+        _refreshOpportunities(),
+      ]);
+
+      final oppId = res['opportunityId'];
+      final accId = res['accountId'];
+      final conId = res['contactId'];
+      final opportunity = opportunityById(RemoteMappers.appId(oppId));
+      final account = accountById(RemoteMappers.appId(accId));
+      final contact = contactById(RemoteMappers.appId(conId));
+      if (opportunity != null && account != null && contact != null) {
+        result = LeadConversionResult(
+          contact: contact,
+          account: account,
+          opportunity: opportunity,
+        );
+      }
+    });
+    return result;
+  }
+
   // -------------------------------------------------------------------------
   // Contacts
   // -------------------------------------------------------------------------
 
   void addContact(Contact contact) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.contactCreate(RemoteMappers.contactCreateInput(contact));
+        await _refreshContacts();
+      }));
+      return;
+    }
     _contacts.insert(0, contact);
     _logActivity(
       kind: ActivityKind.created,
@@ -347,6 +636,13 @@ class CrmStore extends ChangeNotifier {
   }
 
   void updateContact(Contact contact) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.contactUpdate(RemoteMappers.contactUpdateInput(contact));
+        await _refreshContacts();
+      }));
+      return;
+    }
     final index = _contacts.indexWhere((e) => e.id == contact.id);
     if (index == -1) return;
     _contacts[index] = contact;
@@ -354,6 +650,15 @@ class CrmStore extends ChangeNotifier {
   }
 
   void deleteContact(String id) {
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.contactDelete(backendId);
+        await _refreshContacts();
+      }));
+      return;
+    }
     _contacts.removeWhere((e) => e.id == id);
     _commit();
   }
@@ -363,6 +668,13 @@ class CrmStore extends ChangeNotifier {
   // -------------------------------------------------------------------------
 
   void addAccount(Account account) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.accountCreate(RemoteMappers.accountCreateInput(account));
+        await _refreshAccounts();
+      }));
+      return;
+    }
     _accounts.insert(0, account);
     _logActivity(
       kind: ActivityKind.created,
@@ -375,6 +687,13 @@ class CrmStore extends ChangeNotifier {
   }
 
   void updateAccount(Account account) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.accountUpdate(RemoteMappers.accountUpdateInput(account));
+        await _refreshAccounts();
+      }));
+      return;
+    }
     final index = _accounts.indexWhere((e) => e.id == account.id);
     if (index == -1) return;
     _accounts[index] = account;
@@ -382,6 +701,15 @@ class CrmStore extends ChangeNotifier {
   }
 
   void deleteAccount(String id) {
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.accountDelete(backendId);
+        await _refreshAccounts();
+      }));
+      return;
+    }
     _accounts.removeWhere((e) => e.id == id);
     _commit();
   }
@@ -391,6 +719,16 @@ class CrmStore extends ChangeNotifier {
   // -------------------------------------------------------------------------
 
   void addOpportunity(Opportunity opportunity) {
+    if (isServerBacked) {
+      final stageId = _stageIdFor(opportunity.stage);
+      unawaited(_runServer(() async {
+        await _api!.opportunityCreate(
+          RemoteMappers.opportunityCreateInput(opportunity, stageId),
+        );
+        await _refreshOpportunities();
+      }));
+      return;
+    }
     _opportunities.insert(0, opportunity);
     _logActivity(
       kind: ActivityKind.created,
@@ -403,6 +741,16 @@ class CrmStore extends ChangeNotifier {
   }
 
   void updateOpportunity(Opportunity opportunity, {bool log = true}) {
+    if (isServerBacked) {
+      final stageId = _stageIdFor(opportunity.stage);
+      unawaited(_runServer(() async {
+        await _api!.opportunityUpdate(
+          RemoteMappers.opportunityUpdateInput(opportunity, stageId),
+        );
+        await _refreshOpportunities();
+      }));
+      return;
+    }
     final index = _opportunities.indexWhere((e) => e.id == opportunity.id);
     if (index == -1) return;
     final previous = _opportunities[index];
@@ -422,6 +770,28 @@ class CrmStore extends ChangeNotifier {
   }
 
   void setOpportunityStage(Opportunity opportunity, OpportunityStage stage) {
+    if (isServerBacked) {
+      final backendId = _backendId(opportunity.id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        if (stage == OpportunityStage.closedWon ||
+            stage == OpportunityStage.closedLost) {
+          await _api!.opportunityClose(
+            id: backendId,
+            isWon: stage == OpportunityStage.closedWon,
+            lostReason:
+                stage == OpportunityStage.closedLost ? 'Other' : null,
+          );
+        } else {
+          final stageId = _stageIdFor(stage);
+          if (stageId != null) {
+            await _api!.opportunityMoveStage(backendId, stageId);
+          }
+        }
+        await _refreshOpportunities();
+      }));
+      return;
+    }
     updateOpportunity(
       opportunity.copyWith(
         stage: stage,
@@ -432,6 +802,15 @@ class CrmStore extends ChangeNotifier {
   }
 
   void deleteOpportunity(String id) {
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.opportunityDelete(backendId);
+        await _refreshOpportunities();
+      }));
+      return;
+    }
     _opportunities.removeWhere((e) => e.id == id);
     _commit();
   }
@@ -441,11 +820,33 @@ class CrmStore extends ChangeNotifier {
   // -------------------------------------------------------------------------
 
   void addTask(TaskItem task) {
+    if (isServerBacked) {
+      unawaited(_runServer(() async {
+        await _api!.activityCreate(RemoteMappers.taskCreateInput(task));
+        await _refreshTasks();
+      }));
+      return;
+    }
     _tasks.insert(0, task);
     _commit();
   }
 
   void updateTask(TaskItem task) {
+    if (isServerBacked) {
+      final backendId = _backendId(task.id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.activityUpdate({
+          'id': backendId,
+          'subject': task.subject,
+          if (task.notes.isNotEmpty) 'description': task.notes,
+          'priority': task.priority.label.toLowerCase(),
+          'dueDate': task.dueDate.toUtc().toIso8601String(),
+        });
+        await _refreshTasks();
+      }));
+      return;
+    }
     final index = _tasks.indexWhere((e) => e.id == task.id);
     if (index == -1) return;
     _tasks[index] = task;
@@ -453,6 +854,19 @@ class CrmStore extends ChangeNotifier {
   }
 
   void toggleTask(TaskItem task) {
+    if (isServerBacked) {
+      final backendId = _backendId(task.id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        if (!task.completed) {
+          await _api!.activityComplete(backendId);
+        } else {
+          await _api!.activityUpdate({'id': backendId, 'isCompleted': false});
+        }
+        await _refreshTasks();
+      }));
+      return;
+    }
     final completed = !task.completed;
     final updated = task.copyWith(
       completed: completed,
@@ -475,6 +889,15 @@ class CrmStore extends ChangeNotifier {
   }
 
   void deleteTask(String id) {
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId == null) return;
+      unawaited(_runServer(() async {
+        await _api!.activityDelete(backendId);
+        await _refreshTasks();
+      }));
+      return;
+    }
     _tasks.removeWhere((e) => e.id == id);
     _commit();
   }
@@ -488,6 +911,19 @@ class CrmStore extends ChangeNotifier {
     String? relatedId,
     String relatedName = '',
   }) {
+    if (isServerBacked && relatedType != null && relatedId != null) {
+      unawaited(_runServer(() async {
+        await _api!.activityCreate(RemoteMappers.interactionInput(
+          kind: kind,
+          subject: title,
+          detail: detail,
+          relatedType: relatedType,
+          relatedId: relatedId,
+        ));
+        await Future.wait([_refreshActivities(), _refreshTasks()]);
+      }));
+      return;
+    }
     _logActivity(
       kind: kind,
       title: title,
@@ -511,12 +947,21 @@ class CrmStore extends ChangeNotifier {
     if (index == -1) return;
     _notifications[index] = _notifications[index].copyWith(read: true);
     notifyListeners();
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId != null) {
+        unawaited(_api!.notificationMarkRead(backendId).catchError((_) {}));
+      }
+    }
   }
 
   void markAllNotificationsRead() {
     _notifications =
         _notifications.map((n) => n.copyWith(read: true)).toList();
     notifyListeners();
+    if (isServerBacked) {
+      unawaited(_api!.notificationMarkAllRead().catchError((_) {}));
+    }
   }
 
   // -------------------------------------------------------------------------

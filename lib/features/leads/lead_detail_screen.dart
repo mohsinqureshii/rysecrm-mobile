@@ -253,17 +253,29 @@ class _LeadHeader extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              final result =
-                  dialogContext.read<CrmStore>().convertLead(lead);
+            onPressed: () async {
+              final store = dialogContext.read<CrmStore>();
+              final messenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
               Navigator.of(dialogContext).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
+              final result = await store.convertLead(lead);
+              if (result == null) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      store.lastError ?? 'Could not convert this lead.',
+                    ),
+                  ),
+                );
+                return;
+              }
+              messenger.showSnackBar(
                 SnackBar(
                   content:
                       Text('${lead.name} converted — opening opportunity'),
                 ),
               );
-              Navigator.of(context).pushReplacement(
+              navigator.pushReplacement(
                 MaterialPageRoute<void>(
                   builder: (_) => OpportunityDetailScreen(
                     opportunityId: result.opportunity.id,

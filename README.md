@@ -50,6 +50,69 @@ a sales Path, Kanban pipeline, and an Einstein-style AI copilot.
 - Record activity timelines + log call/email/meeting/note from any record
 - Profile & logout; reset demo data from the Menu tab
 
+## 🔌 Backend connectivity (techbanq_crm)
+
+The app runs in **two modes**, chosen on the login screen:
+
+- **Demo** — fully offline, seeded sample data (no backend needed).
+- **Live Server** — connects to the [`techbanq_crm`](https://github.com/mohsinqureshii/techbanq_crm)
+  tRPC backend. Enter the server URL, sign in with real credentials, and every
+  screen reads and writes live data.
+
+The client speaks the backend's tRPC/superjson protocol directly over HTTP with
+cookie-based sessions (`crm_access_token` / `crm_refresh_token`), persisted so
+the app stays signed in across restarts.
+
+**Wired endpoints** (`lib/data/api/ryse_api.dart`):
+
+| Area | Procedures |
+|---|---|
+| Auth | `auth.login`, `auth.logout`, `auth.me` |
+| Leads | `leads.list/create/update/delete/convert` |
+| Contacts | `contacts.list/create/update/delete` |
+| Accounts | `accounts.list/create/update/delete` |
+| Opportunities | `opportunities.list/create/update/moveStage/close/delete` |
+| Pipeline | `pipeline.getStages` |
+| Activities & Tasks | `activities.myTasks/list/create/update/complete/delete` |
+| Dashboard | `dashboard.overview`, `dashboard.activityFeed` |
+| Notifications | `notifications.list/unreadCount/markRead/markAllRead` |
+| Search | `search.global` |
+
+Data flows through one hub, `CrmStore`, which transparently switches between
+the demo seed and the live API — so all 40+ screens work unchanged in either
+mode. Backend records (integer keys) are mapped to the app's models in
+`lib/data/api/remote_mappers.dart`.
+
+### Running the backend locally
+
+```bash
+# in the techbanq_crm repo
+createdb techbanq_crm
+export DATABASE_URL=postgres://user:pass@localhost:5432/techbanq_crm
+export JWT_SECRET=$(openssl rand -base64 48)
+pnpm install
+pnpm db:migrate && pnpm db:seed
+node scripts/create-admin.mjs you@example.com 'your-password'
+pnpm dev            # serves tRPC at http://localhost:3000/api/trpc
+```
+
+Then in the app: **Live Server** → URL `http://10.0.2.2:3000` (Android emulator)
+or `http://localhost:3000` (iOS sim/desktop) → sign in with the admin you
+created.
+
+### Integration test
+
+`test/backend_integration_test.dart` exercises the Dart client end-to-end
+against a running backend. It is skipped by default and runs only when
+credentials are supplied:
+
+```bash
+flutter test test/backend_integration_test.dart \
+  --dart-define=RYSE_API_URL=http://localhost:3000 \
+  --dart-define=RYSE_TEST_EMAIL=you@example.com \
+  --dart-define=RYSE_TEST_PASSWORD='your-password'
+```
+
 ## 🏗 Architecture
 
 ```
@@ -61,10 +124,11 @@ lib/
 │   ├── utils/              # Formatters (currency, relative dates…)
 │   └── widgets/            # Shared UI (record icons, KPI cards, pills…)
 ├── data/
+│   ├── api/                # tRPC client, typed RyseApi, backend↔model mappers
 │   ├── models/             # Lead, Contact, Account, Opportunity, Task…
-│   ├── crm_store.dart      # Central store: CRUD, search, metrics, persistence
+│   ├── crm_store.dart      # Central store: demo + live backend, CRUD, metrics
 │   ├── demo_data.dart      # Seed dataset (dates relative to today)
-│   └── services/           # AuthProvider (login + session)
+│   └── services/           # AuthProvider (demo + server login, session)
 └── features/
     ├── auth/  home/  leads/  contacts/  accounts/
     ├── opportunities/      # List, Kanban, detail w/ sales Path

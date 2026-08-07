@@ -87,13 +87,14 @@ void main() {
   });
 
   group('Lead conversion', () {
-    test('creates contact, account, and opportunity like Salesforce', () {
+    test('creates contact, account, and opportunity like Salesforce',
+        () async {
       final lead = store.leads
           .firstWhere((l) => l.status != LeadStatus.converted);
       final contactsBefore = store.contacts.length;
       final oppsBefore = store.opportunities.length;
 
-      final result = store.convertLead(lead);
+      final result = (await store.convertLead(lead))!;
 
       expect(store.contacts.length, contactsBefore + 1);
       expect(store.opportunities.length, oppsBefore + 1);
@@ -106,7 +107,7 @@ void main() {
       );
     });
 
-    test('reuses an existing account with the same company name', () {
+    test('reuses an existing account with the same company name', () async {
       final account = store.accounts.first;
       final now = DateTime.now();
       final lead = Lead(
@@ -120,7 +121,7 @@ void main() {
       store.addLead(lead);
       final accountsBefore = store.accounts.length;
 
-      final result = store.convertLead(lead);
+      final result = (await store.convertLead(lead))!;
 
       expect(store.accounts.length, accountsBefore);
       expect(result.account.id, account.id);
