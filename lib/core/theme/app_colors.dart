@@ -1,81 +1,90 @@
 import 'package:flutter/material.dart';
 
-/// RYSE design tokens — a charcoal-black theme with the brand purple accent,
-/// matching the RYSE web product (near-black surfaces, #7C3AED purple, the
-/// "ryse" triangle mark).
+/// Design tokens — a clean, light design system (white surfaces, near-black
+/// primary actions, soft borders), matching the Symt product aesthetic.
 class AppColors {
   AppColors._();
 
-  // Brand — RYSE purple
-  static const Color brand = Color(0xFF8B5CF6); // primary purple (on dark)
-  static const Color brandStrong = Color(0xFF7C3AED);
-  static const Color brandDark = Color(0xFF6D28D9);
-  static const Color brandAccent = Color(0xFFA78BFA);
+  // Primary action — near-black (buttons, selected states, key CTAs)
+  static const Color ink = Color(0xFF0B0B0F);
+  static const Color inkSoft = Color(0xFF1C1C22);
 
-  // Dark surfaces (near-black)
-  static const Color background = Color(0xFF0A0D14); // scaffold, near-black
-  static const Color surface = Color(0xFF141821); // cards
-  static const Color surfaceAlt = Color(0xFF1B2130); // raised / inputs
-  static const Color header = Color(0xFF0E121C); // app bars & headers
-  static const Color logoTile = Color(0xFF0F1729); // brand tile behind the mark
-  static const Color border = Color(0xFF262D3A);
-  static const Color borderStrong = Color(0xFF333B4A);
+  /// `brand` is kept as an alias so existing call-sites resolve; the primary
+  /// interactive color is near-black, Symt-style.
+  static const Color brand = ink;
+  static const Color brandStrong = Color(0xFF000000);
+  static const Color brandDark = Color(0xFF000000);
 
-  // Purple-tinted wash (replaces the old light-blue "cloud")
-  static const Color cloud = Color(0xFF1A1730);
+  // Purple is retained only as the AI accent (RYSE AI / assistant highlights).
+  static const Color accent = Color(0xFF7C3AED);
+  static const Color accentSoft = Color(0xFFEDE9FE);
+  static const Color brandAccent = Color(0xFF7C3AED);
+
+  // Surfaces (white / near-white)
+  static const Color background = Color(0xFFFFFFFF); // scaffold
+  static const Color surface = Color(0xFFFFFFFF); // cards
+  static const Color surfaceAlt = Color(0xFFF4F5F7); // inputs / raised chips
+  static const Color header = Color(0xFFFFFFFF); // app bars
+  static const Color canvas = Color(0xFFF7F8FA); // page wash behind cards
+  static const Color logoTile = Color(0xFF0B0B0F);
+  static const Color border = Color(0xFFE8E9ED);
+  static const Color borderStrong = Color(0xFFD7D9E0);
+
+  // Soft neutral wash (avatars, subtle fills)
+  static const Color cloud = Color(0xFFF1F2F5);
 
   // Text
-  static const Color textPrimary = Color(0xFFF4F6FB);
-  static const Color textSecondary = Color(0xFFA6AEC0);
-  static const Color textTertiary = Color(0xFF737B8C);
+  static const Color textPrimary = Color(0xFF0B0B0F);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textTertiary = Color(0xFF9AA0AC);
   static const Color textOnDark = Colors.white;
 
-  // Semantic (tuned for dark)
-  static const Color success = Color(0xFF34D399);
-  static const Color successLight = Color(0xFF10251E);
-  static const Color error = Color(0xFFF87171);
-  static const Color errorBright = Color(0xFFF05252);
-  static const Color errorLight = Color(0xFF2A1518);
-  static const Color warning = Color(0xFFFBBF24);
-  static const Color warningDark = Color(0xFFF59E0B);
-  static const Color warningLight = Color(0xFF2A2110);
-  static const Color info = Color(0xFF94A3B8);
+  // Semantic
+  static const Color success = Color(0xFF178A5A);
+  static const Color successLight = Color(0xFFE6F5EE);
+  static const Color error = Color(0xFFD64545);
+  static const Color errorBright = Color(0xFFDC2626);
+  static const Color errorLight = Color(0xFFFCEBEB);
+  static const Color warning = Color(0xFFB45309);
+  static const Color warningDark = Color(0xFF92400E);
+  static const Color warningLight = Color(0xFFFDF3E7);
+  static const Color info = Color(0xFF6B7280);
 
-  // Record-type colors (vibrant on dark)
-  static const Color lead = Color(0xFFFB7185);
-  static const Color contact = Color(0xFFA78BFA);
-  static const Color account = Color(0xFF60A5FA);
-  static const Color opportunity = Color(0xFFFBBF24);
-  static const Color task = Color(0xFF34D399);
-  static const Color event = Color(0xFFF472B6);
-  static const Color campaign = Color(0xFFFB923C);
-  static const Color report = Color(0xFF818CF8);
-  static const Color ai = Color(0xFF8B5CF6); // RYSE AI purple
+  // Record-type colors (Symt-style dotted category palette)
+  static const Color lead = Color(0xFFEF5DA8); // pink
+  static const Color contact = Color(0xFF7C3AED); // violet
+  static const Color account = Color(0xFF2563EB); // blue
+  static const Color opportunity = Color(0xFFF59E0B); // amber
+  static const Color task = Color(0xFF17A34A); // green
+  static const Color event = Color(0xFFEC4899); // magenta
+  static const Color campaign = Color(0xFFF97316); // orange
+  static const Color report = Color(0xFF6366F1); // indigo
+  static const Color ai = Color(0xFF7C3AED); // AI purple
 
-  // AI / brand gradient (purple → indigo)
-  static const List<Color> aiGradient = [Color(0xFF8B5CF6), Color(0xFF6366F1)];
+  // AI / brand gradient (purple → indigo) — used only for AI surfaces
+  static const List<Color> aiGradient = [Color(0xFF7C3AED), Color(0xFF6366F1)];
 
-  // Chart palette (dark-friendly)
+  // Chart palette
   static const List<Color> chartPalette = [
-    Color(0xFF8B5CF6),
-    Color(0xFF60A5FA),
-    Color(0xFF34D399),
-    Color(0xFFFBBF24),
-    Color(0xFFFB7185),
-    Color(0xFF818CF8),
-    Color(0xFF2DD4BF),
+    Color(0xFF2563EB),
+    Color(0xFF17A34A),
+    Color(0xFFF59E0B),
+    Color(0xFFEF5DA8),
+    Color(0xFF7C3AED),
+    Color(0xFF06B6D4),
+    Color(0xFFF97316),
   ];
 
   /// Stable avatar color derived from a name.
   static Color avatarColor(String seed) {
     const palette = [
-      Color(0xFF8B5CF6),
-      Color(0xFF6366F1),
+      Color(0xFF2563EB),
+      Color(0xFF7C3AED),
       Color(0xFF0EA5E9),
       Color(0xFFF97316),
       Color(0xFFEC4899),
       Color(0xFF14B8A6),
-      Color(0xFF84CC16),
+      Color(0xFF16A34A),
     ];
     var hash = 0;
     for (final unit in seed.codeUnits) {

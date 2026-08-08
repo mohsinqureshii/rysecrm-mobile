@@ -55,6 +55,13 @@ Future<void> _loadFonts() async {
     '/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf',
   ];
   await load('Roboto', roboto);
+  // The app typeface ("Google Sans" family, backed by bundled DM Sans).
+  await load('Google Sans', const [
+    'assets/fonts/DMSans-Regular.ttf',
+    'assets/fonts/DMSans-Medium.ttf',
+    'assets/fonts/DMSans-SemiBold.ttf',
+    'assets/fonts/DMSans-Bold.ttf',
+  ]);
   await load('MaterialIcons', const [
     '/opt/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
   ]);
@@ -101,7 +108,7 @@ void main() {
 
     final app = MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       home: screen,
     );
 

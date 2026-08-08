@@ -10,7 +10,8 @@ a sales Path, Kanban pipeline, and an Einstein-style AI copilot.
 
 ## 📸 Screenshots
 
-Dark, RYSE-branded UI (near-black + brand purple, the "ryse" triangle mark).
+Clean, light UI (white surfaces, Google Sans typography, near-black primary
+buttons, purple reserved for AI) — the "ryse" triangle mark throughout.
 
 | Login | Dashboard | Pipeline (Kanban) | Leads |
 |---|---|---|---|
@@ -184,16 +185,23 @@ flutter test      # 22 tests: auth, store CRUD, conversion, search, login flow
 
 ## 🎨 Design language
 
-The real RYSE brand — a dark, focused workspace:
-- **Charcoal-black surfaces** (`#0A0D14` scaffold, `#141821` cards) with the
-  **RYSE purple accent** (`#8B5CF6` / `#7C3AED`)
-- The actual **RYSE logo**: the purple apex-left triangle mark + lowercase
-  "ryse" wordmark (see `lib/core/widgets/ryse_logo.dart`)
-- Vibrant record-type colors that pop on dark (leads rose, contacts violet,
-  accounts blue, opportunities amber, tasks green)
+A clean, light design system (Symt-style):
+- **White surfaces** (`#FFFFFF` cards on a `#F7F8FA` canvas) with soft grey
+  borders and **near-black primary actions** (`#0B0B0F`) — proper filled
+  buttons, outlined secondary/social buttons
+- **Google Sans** typeface across the app. Google Sans is a proprietary Google
+  font and cannot be redistributed, so the repo bundles **DM Sans**
+  (SIL OFL 1.1) as a drop-in stand-in under the `Google Sans` family in
+  `pubspec.yaml`. To use the licensed font, replace the four TTFs in
+  `assets/fonts/` with the real Google Sans weights (same filenames).
+- The **RYSE logo**: the purple apex-left triangle mark + lowercase "ryse"
+  wordmark (see `lib/core/widgets/ryse_logo.dart`)
+- Colorful record-type accents (leads pink, contacts violet, accounts blue,
+  opportunities amber, tasks green); **purple is reserved for AI** surfaces
 - Chevron sales Path, record detail tabs (Details / Related / Activity),
   bottom navigation with a global “+” create sheet
-- Purple → indigo gradient for everything AI
+- Proper auth: email/password + Continue with Google / Apple / phone +
+  Continue as guest (no demo/live-server toggles)
 
 ## 📱 Platforms
 

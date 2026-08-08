@@ -170,7 +170,7 @@ class MenuScreen extends StatelessWidget {
                       color: AppColors.brand,
                     ),
                     title: const Text(
-                      'Reset demo data',
+                      'Reset sample data',
                       style: TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
@@ -200,7 +200,7 @@ class MenuScreen extends StatelessWidget {
                       applicationName: 'RYSE CRM',
                       applicationVersion: '1.0.0',
                       applicationLegalese:
-                          'AI-driven sales CRM demo built with Flutter.',
+                          'AI-driven sales CRM built with Flutter.',
                     ),
                   ),
                 ],
@@ -223,7 +223,7 @@ class MenuScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: const Text('Reset demo data?'),
+        title: const Text('Reset sample data?'),
         content: const Text(
           'All your changes will be discarded and the original sample '
           'records restored.',
@@ -238,7 +238,7 @@ class MenuScreen extends StatelessWidget {
               dialogContext.read<CrmStore>().resetDemoData();
               Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Demo data restored')),
+                const SnackBar(content: Text('Sample data restored')),
               );
             },
             child: const Text('Reset'),

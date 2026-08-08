@@ -78,14 +78,14 @@ class _PipelineSummary extends StatelessWidget {
               value: Formatters.compactCurrency(store.pipelineValue),
             ),
           ),
-          Container(width: 1, height: 34, color: Colors.white24),
+          Container(width: 1, height: 34, color: AppColors.border),
           Expanded(
             child: _SummaryItem(
               label: 'Weighted',
               value: Formatters.compactCurrency(store.weightedPipelineValue),
             ),
           ),
-          Container(width: 1, height: 34, color: Colors.white24),
+          Container(width: 1, height: 34, color: AppColors.border),
           Expanded(
             child: _SummaryItem(
               label: 'Open Deals',

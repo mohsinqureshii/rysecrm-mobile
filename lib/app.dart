@@ -16,9 +16,8 @@ class RyseApp extends StatelessWidget {
     return MaterialApp(
       title: 'RYSE CRM',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.light,
+      themeMode: ThemeMode.light,
       home: const _RootGate(),
     );
   }

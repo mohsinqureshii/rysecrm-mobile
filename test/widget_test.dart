@@ -27,8 +27,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump();
 
-    expect(find.text('Log in to RYSE'), findsOneWidget);
-    expect(find.text('Log In'), findsOneWidget);
+    expect(find.text('Welcome to RYSE'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
   });
 
   testWidgets('rejects invalid credentials with an error message',
@@ -42,7 +42,7 @@ void main() {
       'wrong@user.com',
     );
     await tester.enterText(find.byType(TextFormField).at(1), 'badpassword');
-    await tester.tap(find.text('Log In'));
+    await tester.tap(find.text('Sign in'));
     // Simulated auth round-trip is ~900ms.
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump();
@@ -67,7 +67,7 @@ void main() {
       find.byType(TextFormField).at(1),
       AuthProvider.demoPassword,
     );
-    await tester.tap(find.text('Log In'));
+    await tester.tap(find.text('Sign in'));
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 100));
 

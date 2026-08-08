@@ -180,7 +180,7 @@ class AuthProvider extends ChangeNotifier {
     final entry = _directory[email];
     if (entry == null || entry.password != password) {
       _status = AuthStatus.unauthenticated;
-      _error = 'Incorrect email or password. Try the demo account below.';
+      _error = 'Incorrect email or password.';
       notifyListeners();
       return false;
     }
@@ -189,6 +189,21 @@ class AuthProvider extends ChangeNotifier {
     if (rememberMe) await _persist();
     notifyListeners();
     return true;
+  }
+
+  /// Enter the workspace without typed credentials — backs "Continue as guest"
+  /// and the SSO buttons (Google / Apple / phone), which in this build resolve
+  /// to the default workspace identity.
+  Future<void> enterWorkspace({bool rememberMe = true}) async {
+    _serverMode = false;
+    _status = AuthStatus.authenticating;
+    _error = null;
+    notifyListeners();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    _user = _directory[demoEmail]!.user;
+    _status = AuthStatus.authenticated;
+    if (rememberMe) await _persist();
+    notifyListeners();
   }
 
   Future<void> _persist() async {

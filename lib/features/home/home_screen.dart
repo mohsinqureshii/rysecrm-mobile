@@ -77,38 +77,28 @@ class _GreetingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstName = userName.split(' ').first;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 26),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.brandStrong.withValues(alpha: 0.30),
-            AppColors.header,
-          ],
-        ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
-        border: const Border(
-          bottom: BorderSide(color: AppColors.border),
-        ),
-      ),
+      color: AppColors.header,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$_greeting, $firstName',
+            Formatters.date(DateTime.now()).toUpperCase(),
             style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+              color: AppColors.textTertiary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            Formatters.date(DateTime.now()),
+            '$_greeting, $firstName',
             style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13.5,
+              color: AppColors.textPrimary,
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
             ),
           ),
         ],
