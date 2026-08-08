@@ -65,7 +65,7 @@ class ContactDetailScreen extends StatelessWidget {
         body: Column(
           children: [
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               child: Column(
                 children: [
                   Padding(

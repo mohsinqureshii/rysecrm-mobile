@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: buildRyseAppBar(context, title: 'RYSE'),
+      appBar: buildRyseAppBar(context, title: 'RYSE', showLogo: true),
       body: RefreshIndicator(
         onRefresh: () =>
             Future<void>.delayed(const Duration(milliseconds: 600)),
@@ -78,17 +78,27 @@ class _GreetingHeader extends StatelessWidget {
     final firstName = userName.split(' ').first;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 26),
-      decoration: const BoxDecoration(
-        color: AppColors.navy,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.brandStrong.withValues(alpha: 0.30),
+            AppColors.header,
+          ],
+        ),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.border),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$_greeting, $firstName 👋',
+            '$_greeting, $firstName',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.w800,
             ),
@@ -96,8 +106,8 @@ class _GreetingHeader extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             Formatters.date(DateTime.now()),
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.65),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 13.5,
             ),
           ),
@@ -387,7 +397,7 @@ class _PipelineChartCard extends StatelessWidget {
                       maxY: maxValue * 1.2,
                       barTouchData: BarTouchData(
                         touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => AppColors.navyLight,
+                          getTooltipColor: (_) => AppColors.surfaceAlt,
                           getTooltipItem: (group, _, rod, _) =>
                               BarTooltipItem(
                             Formatters.compactCurrency(rod.toY),

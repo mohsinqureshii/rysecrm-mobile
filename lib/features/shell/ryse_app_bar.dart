@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/widgets/common.dart';
+import '../../core/widgets/ryse_logo.dart';
 import '../../data/crm_store.dart';
 import '../../data/services/auth_provider.dart';
 import '../notifications/notifications_screen.dart';
@@ -9,9 +10,13 @@ import '../search/search_screen.dart';
 import '../settings/profile_screen.dart';
 
 /// Standard top app bar with global search, notifications, and profile.
+///
+/// When [showLogo] is true the title area shows the RYSE wordmark instead of
+/// plain text (used on the Home tab).
 AppBar buildRyseAppBar(
   BuildContext context, {
   required String title,
+  bool showLogo = false,
   List<Widget> extraActions = const [],
   PreferredSizeWidget? bottom,
 }) {
@@ -22,7 +27,8 @@ AppBar buildRyseAppBar(
       context.select<AuthProvider, String>((a) => a.user?.name ?? 'User');
 
   return AppBar(
-    title: Text(title),
+    titleSpacing: showLogo ? 16 : null,
+    title: showLogo ? const RyseWordmark(fontSize: 24) : Text(title),
     bottom: bottom,
     actions: [
       ...extraActions,

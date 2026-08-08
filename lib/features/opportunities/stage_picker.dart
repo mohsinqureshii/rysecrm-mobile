@@ -10,7 +10,7 @@ import '../../data/models/models.dart';
 Future<void> showStagePicker(BuildContext context, Opportunity opportunity) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),

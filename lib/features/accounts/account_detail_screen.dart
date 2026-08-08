@@ -128,7 +128,7 @@ class _AccountHeader extends StatelessWidget {
         .fold<double>(0, (s, o) => s + o.amount);
 
     return Container(
-      color: Colors.white,
+      color: AppColors.surface,
       child: Column(
         children: [
           Padding(

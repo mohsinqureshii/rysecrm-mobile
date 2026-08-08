@@ -13,7 +13,7 @@ import '../tasks/task_form_screen.dart';
 void showCreateSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),

@@ -117,7 +117,7 @@ Future<void> showLogInteractionSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.surfaceAlt,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -259,7 +259,7 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = action.emphasized ? Colors.white : AppColors.brand;
     return Material(
-      color: action.emphasized ? AppColors.brand : Colors.white,
+      color: action.emphasized ? AppColors.brand : AppColors.surfaceAlt,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: action.onTap,

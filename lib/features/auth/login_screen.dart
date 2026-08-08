@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/ryse_logo.dart';
 import '../../data/api/api_config.dart';
 import '../../data/services/auth_provider.dart';
 
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLoading = auth.status == AuthStatus.authenticating;
 
     return Scaffold(
-      backgroundColor: AppColors.navy,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -107,31 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildBrand() {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(Icons.bolt, size: 44, color: AppColors.brandAccent),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'RYSE',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 30,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 6,
-          ),
-        ),
-        const SizedBox(height: 4),
+        const RyseAppTile(size: 76),
+        const SizedBox(height: 18),
+        const RyseWordmark(fontSize: 36),
+        const SizedBox(height: 8),
         Text(
           'Sell smarter with AI',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.65),
+            color: AppColors.textSecondary.withValues(alpha: 0.85),
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -144,8 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
       child: Form(
         key: _formKey,
@@ -426,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
       '© 2026 RYSE · Secure sign-in',
       textAlign: TextAlign.center,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.45),
+        color: AppColors.textTertiary,
         fontSize: 12,
       ),
     );

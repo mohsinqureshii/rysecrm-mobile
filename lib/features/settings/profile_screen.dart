@@ -19,7 +19,7 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 40),
         children: [
           Container(
-            color: AppColors.navy,
+            color: AppColors.header,
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
             child: Column(
               children: [
@@ -28,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
                 Text(
                   user?.name ?? 'User',
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
@@ -40,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
                     if (user?.company.isNotEmpty ?? false) user!.company,
                   ].join(' · '),
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: AppColors.textSecondary,
                     fontSize: 13.5,
                   ),
                 ),

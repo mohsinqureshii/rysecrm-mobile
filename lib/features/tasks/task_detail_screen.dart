@@ -53,7 +53,7 @@ class TaskDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 40),
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

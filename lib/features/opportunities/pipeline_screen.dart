@@ -67,7 +67,7 @@ class _PipelineSummary extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.navy,
+        color: AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -111,7 +111,7 @@ class _SummaryItem extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w800,
           ),
@@ -120,7 +120,7 @@ class _SummaryItem extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.65),
+            color: AppColors.textSecondary,
             fontSize: 11.5,
           ),
         ),
@@ -155,7 +155,7 @@ class _StageColumn extends StatelessWidget {
           width: 270,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: highlighted ? AppColors.cloud : const Color(0xFFECEFF4),
+            color: highlighted ? AppColors.cloud : AppColors.surfaceAlt,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: highlighted ? AppColors.brand : AppColors.border,

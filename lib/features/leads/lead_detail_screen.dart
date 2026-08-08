@@ -116,7 +116,7 @@ class _LeadHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final converted = lead.status == LeadStatus.converted;
     return Container(
-      color: Colors.white,
+      color: AppColors.surface,
       child: Column(
         children: [
           Padding(

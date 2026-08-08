@@ -10,6 +10,8 @@ a sales Path, Kanban pipeline, and an Einstein-style AI copilot.
 
 ## 📸 Screenshots
 
+Dark, RYSE-branded UI (near-black + brand purple, the "ryse" triangle mark).
+
 | Login | Dashboard | Pipeline (Kanban) | Leads |
 |---|---|---|---|
 | ![Login](docs/screenshots/01_login.png) | ![Dashboard](docs/screenshots/02_dashboard.png) | ![Pipeline](docs/screenshots/03_pipeline.png) | ![Leads](docs/screenshots/04_leads.png) |
@@ -17,6 +19,10 @@ a sales Path, Kanban pipeline, and an Einstein-style AI copilot.
 | Opportunity (Sales Path) | Lead detail | RYSE AI | Tasks |
 |---|---|---|---|
 | ![Opportunity](docs/screenshots/05_opportunity.png) | ![Lead](docs/screenshots/06_lead_detail.png) | ![Assistant](docs/screenshots/07_assistant.png) | ![Tasks](docs/screenshots/08_tasks.png) |
+
+| Reports & Analytics | Calendar | Menu |
+|---|---|---|
+| ![Reports](docs/screenshots/09_reports.png) | ![Calendar](docs/screenshots/10_calendar.png) | ![Menu](docs/screenshots/11_menu.png) |
 
 _Regenerate any time: `flutter test test/screenshots/screenshots_test.dart --update-goldens`_
 
@@ -178,13 +184,16 @@ flutter test      # 22 tests: auth, store CRUD, conversion, search, login flow
 
 ## 🎨 Design language
 
-Modeled on the Salesforce Lightning Design System:
-- Action blue `#0176D3` on deep navy `#032D60`
-- SLDS object colors (leads coral, contacts violet, accounts periwinkle,
-  opportunities amber)
+The real RYSE brand — a dark, focused workspace:
+- **Charcoal-black surfaces** (`#0A0D14` scaffold, `#141821` cards) with the
+  **RYSE purple accent** (`#8B5CF6` / `#7C3AED`)
+- The actual **RYSE logo**: the purple apex-left triangle mark + lowercase
+  "ryse" wordmark (see `lib/core/widgets/ryse_logo.dart`)
+- Vibrant record-type colors that pop on dark (leads rose, contacts violet,
+  accounts blue, opportunities amber, tasks green)
 - Chevron sales Path, record detail tabs (Details / Related / Activity),
   bottom navigation with a global “+” create sheet
-- Einstein-style purple gradient for everything AI
+- Purple → indigo gradient for everything AI
 
 ## 📱 Platforms
 

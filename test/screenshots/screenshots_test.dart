@@ -15,11 +15,14 @@ import 'package:ryse_crm/data/crm_store.dart';
 import 'package:ryse_crm/data/services/auth_provider.dart';
 import 'package:ryse_crm/features/assistant/assistant_screen.dart';
 import 'package:ryse_crm/features/auth/login_screen.dart';
+import 'package:ryse_crm/features/calendar/calendar_screen.dart';
 import 'package:ryse_crm/features/home/home_screen.dart';
 import 'package:ryse_crm/features/leads/lead_detail_screen.dart';
 import 'package:ryse_crm/features/leads/leads_screen.dart';
+import 'package:ryse_crm/features/menu/menu_screen.dart';
 import 'package:ryse_crm/features/opportunities/opportunity_detail_screen.dart';
 import 'package:ryse_crm/features/opportunities/pipeline_screen.dart';
+import 'package:ryse_crm/features/reports/reports_screen.dart';
 import 'package:ryse_crm/features/tasks/tasks_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -98,7 +101,7 @@ void main() {
 
     final app = MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       home: screen,
     );
 
@@ -181,6 +184,24 @@ void main() {
   testWidgets('08 tasks', (tester) async {
     final s = await seed(tester);
     await shoot(tester, '08_tasks', const TasksScreen(),
+        store: s.store, auth: s.auth);
+  });
+
+  testWidgets('09 reports', (tester) async {
+    final s = await seed(tester);
+    await shoot(tester, '09_reports', const ReportsScreen(),
+        store: s.store, auth: s.auth);
+  });
+
+  testWidgets('10 calendar', (tester) async {
+    final s = await seed(tester);
+    await shoot(tester, '10_calendar', const CalendarScreen(),
+        store: s.store, auth: s.auth);
+  });
+
+  testWidgets('11 menu', (tester) async {
+    final s = await seed(tester);
+    await shoot(tester, '11_menu', const MenuScreen(),
         store: s.store, auth: s.auth);
   });
 }

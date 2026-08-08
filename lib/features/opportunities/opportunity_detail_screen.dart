@@ -129,7 +129,7 @@ class _OpportunityHeader extends StatelessWidget {
     final stage = opportunity.stage;
 
     return Container(
-      color: Colors.white,
+      color: AppColors.surface,
       child: Column(
         children: [
           Padding(

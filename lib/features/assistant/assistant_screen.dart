@@ -123,7 +123,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             child: Container(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surface,
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: Row(
@@ -202,7 +202,7 @@ class _MessageBubble extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                 constraints: const BoxConstraints(maxWidth: 300),
                 decoration: BoxDecoration(
-                  color: isUser ? AppColors.brand : Colors.white,
+                  color: isUser ? AppColors.brand : AppColors.surfaceAlt,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(16),
                     topRight: const Radius.circular(16),
@@ -294,7 +294,7 @@ class _TypingBubbleState extends State<_TypingBubble>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surfaceAlt,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border),
           ),

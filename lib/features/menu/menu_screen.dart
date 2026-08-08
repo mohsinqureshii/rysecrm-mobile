@@ -7,9 +7,11 @@ import '../../data/crm_store.dart';
 import '../../data/models/models.dart';
 import '../../data/services/auth_provider.dart';
 import '../accounts/accounts_screen.dart';
+import '../calendar/calendar_screen.dart';
 import '../contacts/contacts_screen.dart';
 import '../leads/leads_screen.dart';
 import '../opportunities/opportunities_screen.dart';
+import '../reports/reports_screen.dart';
 import '../settings/profile_screen.dart';
 import '../shell/ryse_app_bar.dart';
 
@@ -100,6 +102,57 @@ class MenuScreen extends StatelessWidget {
                     count: store.opportunities.length,
                     onTap: () =>
                         _push(context, const OpportunitiesScreen()),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SectionHeader(title: 'Insights'),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.insights_outlined,
+                      color: AppColors.report,
+                    ),
+                    title: const Text(
+                      'Reports & Analytics',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Pipeline, win rate, sources, revenue',
+                      style: TextStyle(fontSize: 12.5),
+                    ),
+                    trailing: const Icon(Icons.chevron_right,
+                        size: 18, color: AppColors.textTertiary),
+                    onTap: () => _push(context, const ReportsScreen()),
+                  ),
+                  const Divider(indent: 66),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.calendar_month_outlined,
+                      color: AppColors.event,
+                    ),
+                    title: const Text(
+                      'Calendar',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Agenda of tasks and meetings',
+                      style: TextStyle(fontSize: 12.5),
+                    ),
+                    trailing: const Icon(Icons.chevron_right,
+                        size: 18, color: AppColors.textTertiary),
+                    onTap: () => _push(context, const CalendarScreen()),
                   ),
                 ],
               ),
