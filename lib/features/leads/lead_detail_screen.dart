@@ -333,6 +333,8 @@ class _DetailsTab extends StatelessWidget {
             DetailFieldRow(label: 'Title', value: lead.title),
             DetailFieldRow(label: 'Email', value: lead.email),
             DetailFieldRow(label: 'Phone', value: lead.phone),
+            if (lead.website.isNotEmpty)
+              DetailFieldRow(label: 'Website', value: lead.website),
           ],
         ),
         const SectionHeader(title: 'Qualification'),

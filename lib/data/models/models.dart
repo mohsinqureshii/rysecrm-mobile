@@ -199,6 +199,7 @@ class Lead {
     this.title = '',
     this.email = '',
     this.phone = '',
+    this.website = '',
     this.industry = '',
     this.source = 'Web',
     this.status = LeadStatus.newLead,
@@ -220,6 +221,7 @@ class Lead {
   final String title;
   final String email;
   final String phone;
+  final String website;
   final String industry;
   final String source;
   final LeadStatus status;
@@ -242,6 +244,7 @@ class Lead {
     String? title,
     String? email,
     String? phone,
+    String? website,
     String? industry,
     String? source,
     LeadStatus? status,
@@ -262,6 +265,7 @@ class Lead {
       title: title ?? this.title,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      website: website ?? this.website,
       industry: industry ?? this.industry,
       source: source ?? this.source,
       status: status ?? this.status,
@@ -285,6 +289,7 @@ class Lead {
         'title': title,
         'email': email,
         'phone': phone,
+        'website': website,
         'industry': industry,
         'source': source,
         'status': status.label,
@@ -307,6 +312,7 @@ class Lead {
         title: json['title'] as String? ?? '',
         email: json['email'] as String? ?? '',
         phone: json['phone'] as String? ?? '',
+        website: json['website'] as String? ?? '',
         industry: json['industry'] as String? ?? '',
         source: json['source'] as String? ?? 'Web',
         status: LeadStatus.fromLabel(json['status'] as String? ?? 'New'),

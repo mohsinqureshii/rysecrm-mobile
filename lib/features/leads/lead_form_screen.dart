@@ -54,6 +54,7 @@ class _LeadFormScreenState extends State<LeadFormScreen> {
   late final _title = TextEditingController(text: widget.lead?.title);
   late final _email = TextEditingController(text: widget.lead?.email);
   late final _phone = TextEditingController(text: widget.lead?.phone);
+  late final _website = TextEditingController(text: widget.lead?.website);
   late final _revenue = TextEditingController(
     text: widget.lead == null || widget.lead!.annualRevenue == 0
         ? ''
@@ -77,6 +78,7 @@ class _LeadFormScreenState extends State<LeadFormScreen> {
       _title,
       _email,
       _phone,
+      _website,
       _revenue,
       _city,
       _country,
@@ -118,6 +120,7 @@ class _LeadFormScreenState extends State<LeadFormScreen> {
         title: _title.text.trim(),
         email: _email.text.trim(),
         phone: _phone.text.trim(),
+        website: _website.text.trim(),
         industry: _industry,
         source: _source,
         status: _status,
@@ -137,6 +140,7 @@ class _LeadFormScreenState extends State<LeadFormScreen> {
         title: _title.text.trim(),
         email: _email.text.trim(),
         phone: _phone.text.trim(),
+        website: _website.text.trim(),
         industry: _industry,
         source: _source,
         status: _status,
@@ -209,6 +213,11 @@ class _LeadFormScreenState extends State<LeadFormScreen> {
               controller: _phone,
               label: 'Phone',
               keyboardType: TextInputType.phone,
+            ),
+            AppTextField(
+              controller: _website,
+              label: 'Website',
+              keyboardType: TextInputType.url,
             ),
             const FormSectionLabel('Qualification'),
             AppDropdownField<LeadStatus>(

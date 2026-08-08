@@ -17,11 +17,13 @@ import 'package:ryse_crm/features/assistant/assistant_screen.dart';
 import 'package:ryse_crm/features/auth/login_screen.dart';
 import 'package:ryse_crm/features/calendar/calendar_screen.dart';
 import 'package:ryse_crm/features/home/home_screen.dart';
+import 'package:ryse_crm/features/leads/lead_capture_screen.dart';
 import 'package:ryse_crm/features/leads/lead_detail_screen.dart';
 import 'package:ryse_crm/features/leads/leads_screen.dart';
 import 'package:ryse_crm/features/menu/menu_screen.dart';
 import 'package:ryse_crm/features/opportunities/opportunity_detail_screen.dart';
 import 'package:ryse_crm/features/opportunities/pipeline_screen.dart';
+import 'package:ryse_crm/features/shell/main_shell.dart';
 import 'package:ryse_crm/features/reports/reports_screen.dart';
 import 'package:ryse_crm/features/tasks/tasks_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -209,6 +211,18 @@ void main() {
   testWidgets('11 menu', (tester) async {
     final s = await seed(tester);
     await shoot(tester, '11_menu', const MenuScreen(),
+        store: s.store, auth: s.auth);
+  });
+
+  testWidgets('12 capture lead', (tester) async {
+    final s = await seed(tester);
+    await shoot(tester, '12_capture_lead', const LeadCaptureScreen(),
+        store: s.store, auth: s.auth);
+  });
+
+  testWidgets('13 shell nav', (tester) async {
+    final s = await seed(tester);
+    await shoot(tester, '13_shell_nav', const MainShell(),
         store: s.store, auth: s.auth);
   });
 }

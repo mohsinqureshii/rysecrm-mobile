@@ -25,6 +25,10 @@ buttons, purple reserved for AI) — the "ryse" triangle mark throughout.
 |---|---|---|
 | ![Reports](docs/screenshots/09_reports.png) | ![Calendar](docs/screenshots/10_calendar.png) | ![Menu](docs/screenshots/11_menu.png) |
 
+| Capture Lead | Home + nav bar |
+|---|---|
+| ![Capture Lead](docs/screenshots/12_capture_lead.png) | ![Shell](docs/screenshots/13_shell_nav.png) |
+
 _Regenerate any time: `flutter test test/screenshots/screenshots_test.dart --update-goldens`_
 
 ## ✨ Features

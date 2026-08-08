@@ -8,8 +8,11 @@ import '../../core/widgets/common.dart';
 import '../../data/crm_store.dart';
 import '../../data/models/models.dart';
 import '../../data/services/auth_provider.dart';
+import '../leads/lead_capture_screen.dart';
 import '../leads/leads_screen.dart';
 import '../opportunities/opportunities_screen.dart';
+import '../opportunities/opportunity_form_screen.dart';
+import '../tasks/task_form_screen.dart';
 import '../shell/record_nav.dart';
 import '../shell/ryse_app_bar.dart';
 
@@ -34,6 +37,7 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 96),
           children: [
             _GreetingHeader(userName: user?.name ?? 'there'),
+            const _QuickActions(),
             _KpiGrid(store: store),
             const SectionHeader(title: 'RYSE AI Insights'),
             _AiInsightsCarousel(store: store),
@@ -102,6 +106,162 @@ class _GreetingHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Home quick actions — the prominent "Capture Lead" plus fast create paths.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions();
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => screen),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 2),
+      child: Column(
+        children: [
+          // Primary: capture a lead.
+          Material(
+            color: AppColors.ink,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _push(context, const LeadCaptureScreen()),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.person_add_alt_1,
+                          color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Capture Lead',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Add a new lead in seconds',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward,
+                        color: Colors.white, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _QuickChip(
+                icon: Icons.handshake_outlined,
+                label: 'New Deal',
+                color: AppColors.opportunity,
+                onTap: () => _push(context, const OpportunityFormScreen()),
+              ),
+              const SizedBox(width: 12),
+              _QuickChip(
+                icon: Icons.add_task,
+                label: 'Add Task',
+                color: AppColors.task,
+                onTap: () => _push(context, const TaskFormScreen()),
+              ),
+              const SizedBox(width: 12),
+              _QuickChip(
+                icon: Icons.people_alt_outlined,
+                label: 'Leads',
+                color: AppColors.lead,
+                onTap: () => _push(context, const LeadsScreen()),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickChip extends StatelessWidget {
+  const _QuickChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

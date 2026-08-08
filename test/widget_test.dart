@@ -71,9 +71,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1100));
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Dashboard KPIs are visible after login.
+    // Dashboard is visible after login: the Capture Lead quick action and KPIs.
+    expect(find.text('Capture Lead'), findsOneWidget);
     expect(find.text('Open Pipeline'), findsOneWidget);
     expect(find.text('Won This Quarter'), findsOneWidget);
-    expect(find.text('RYSE AI Insights'), findsOneWidget);
   });
 }

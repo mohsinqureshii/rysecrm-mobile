@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ryse_logo.dart';
+import '../../data/api/api_config.dart';
 import '../../data/services/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -41,9 +42,13 @@ class _LoginScreenState extends State<LoginScreen> {
     await context.read<AuthProvider>().enterWorkspace();
   }
 
-  Future<void> _continueWith(String provider) async {
-    // SSO placeholder — resolves to the workspace identity in this build.
-    await context.read<AuthProvider>().enterWorkspace();
+  Future<void> _continueWithJeeym() async {
+    context.read<AuthProvider>().clearError();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const JeeymConnectSheet(),
+    );
   }
 
   void _showInfo(String title, String body) {
@@ -178,22 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 22),
                     const _OrDivider(),
                     const SizedBox(height: 22),
-                    _SocialButton(
-                      label: 'Continue with Google',
-                      icon: const _GoogleGlyph(),
-                      onTap: isLoading ? null : () => _continueWith('Google'),
-                    ),
-                    const SizedBox(height: 12),
-                    _SocialButton(
-                      label: 'Continue with Apple',
-                      icon: const Icon(Icons.apple, size: 22),
-                      onTap: isLoading ? null : () => _continueWith('Apple'),
-                    ),
-                    const SizedBox(height: 12),
-                    _SocialButton(
-                      label: 'Continue with phone',
-                      icon: const Icon(Icons.phone_iphone, size: 20),
-                      onTap: isLoading ? null : () => _continueWith('phone'),
+                    _JeeymButton(
+                      onTap: isLoading ? null : _continueWithJeeym,
                     ),
                     const SizedBox(height: 24),
                     Row(
@@ -333,15 +324,10 @@ class _OrDivider extends StatelessWidget {
   }
 }
 
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+/// Single SSO button for Jeeym (jeeym.com) — the product's own identity.
+class _JeeymButton extends StatelessWidget {
+  const _JeeymButton({required this.onTap});
 
-  final String label;
-  final Widget icon;
   final VoidCallback? onTap;
 
   @override
@@ -351,29 +337,201 @@ class _SocialButton extends StatelessWidget {
       style: AppTheme.secondaryButton,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 22, height: 22, child: Center(child: icon)),
-          const SizedBox(width: 12),
-          Text(label),
+        children: const [
+          JeeymGlyph(size: 22),
+          SizedBox(width: 12),
+          Text('Continue with Jeeym'),
         ],
       ),
     );
   }
 }
 
-/// Minimal multi-color "G" mark for the Google button (no external asset).
-class _GoogleGlyph extends StatelessWidget {
-  const _GoogleGlyph();
+/// The Jeeym mark — a rounded brand tile with a "j", drawn with no asset.
+class JeeymGlyph extends StatelessWidget {
+  const JeeymGlyph({super.key, this.size = 22});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      'G',
-      style: TextStyle(
-        fontSize: 19,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF4285F4),
-        height: 1,
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.accent, Color(0xFF4F46E5)],
+        ),
+        borderRadius: BorderRadius.circular(size * 0.28),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        'j',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size * 0.62,
+          fontWeight: FontWeight.w800,
+          height: 1.1,
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet that connects the app to a live Jeeym workspace and signs in
+/// against the backend (server mode), so records sync live.
+class JeeymConnectSheet extends StatefulWidget {
+  const JeeymConnectSheet({super.key});
+
+  @override
+  State<JeeymConnectSheet> createState() => _JeeymConnectSheetState();
+}
+
+class _JeeymConnectSheetState extends State<JeeymConnectSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  late final _server = TextEditingController(text: ApiConfig.jeeymBaseUrl);
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    _server.dispose();
+    super.dispose();
+  }
+
+  Future<void> _connect() async {
+    final auth = context.read<AuthProvider>();
+    auth.clearError();
+    if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    final ok = await auth.signIn(
+      email: _email.text,
+      password: _password.text,
+      serverMode: true,
+      serverUrl: _server.text,
+    );
+    if (ok && mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final isLoading = auth.status == AuthStatus.authenticating;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 8,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                const JeeymGlyph(size: 34),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Sign in with Jeeym',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Connect to your live workspace',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (auth.error != null) ...[
+              _ErrorBanner(message: auth.error!),
+              const SizedBox(height: 14),
+            ],
+            _Field(
+              controller: _email,
+              hint: 'Work email',
+              enabled: !isLoading,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              validator: (v) =>
+                  (v ?? '').trim().isEmpty ? 'Enter your email' : null,
+            ),
+            const SizedBox(height: 12),
+            _Field(
+              controller: _password,
+              hint: 'Password',
+              enabled: !isLoading,
+              obscureText: _obscure,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _connect(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscure
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  size: 20,
+                ),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              ),
+              validator: (v) =>
+                  (v ?? '').isEmpty ? 'Enter your password' : null,
+            ),
+            const SizedBox(height: 12),
+            _Field(
+              controller: _server,
+              hint: 'Workspace URL',
+              enabled: !isLoading,
+              keyboardType: TextInputType.url,
+              validator: (v) =>
+                  (v ?? '').trim().isEmpty ? 'Enter the workspace URL' : null,
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              onPressed: isLoading ? null : _connect,
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Connect & sign in'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -11,6 +11,12 @@ class ApiConfig {
   /// A compile-time override: `flutter run --dart-define=RYSE_API_URL=...`.
   static const String _fromEnv = String.fromEnvironment('RYSE_API_URL');
 
+  /// Default host for the hosted Jeeym workspace (jeeym.com). Overridable with
+  /// `--dart-define=JEEYM_API_URL=...` or edited in the connect sheet.
+  static const String _jeeymEnv = String.fromEnvironment('JEEYM_API_URL');
+  static String get jeeymBaseUrl =>
+      _jeeymEnv.isNotEmpty ? _jeeymEnv : 'https://app.jeeym.com';
+
   /// Best-effort default base URL for the current platform.
   ///
   /// - Android emulator reaches the host machine at `10.0.2.2`.

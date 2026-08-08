@@ -18,8 +18,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  static const _titles = ['Home', 'Pipeline', 'Tasks', 'RYSE AI', 'Menu'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,50 +34,62 @@ class _MainShellState extends State<MainShell> {
       floatingActionButton: _index <= 2
           ? FloatingActionButton(
               tooltip: 'Create new record',
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
               onPressed: () => showCreateSheet(context),
               child: const Icon(Icons.add),
             )
           : null,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
+          color: AppColors.header,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (i) => setState(() => _index = i),
-          items: [
-            const BottomNavigationBarItem(
+        child: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: [
+            const NavigationDestination(
               icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
+              selectedIcon: Icon(Icons.home),
               label: 'Home',
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.filter_alt_outlined),
-              activeIcon: Icon(Icons.filter_alt),
+            const NavigationDestination(
+              icon: Icon(Icons.insights_outlined),
+              selectedIcon: Icon(Icons.insights),
               label: 'Pipeline',
             ),
-            const BottomNavigationBarItem(
+            const NavigationDestination(
               icon: Icon(Icons.check_circle_outline),
-              activeIcon: Icon(Icons.task_alt),
+              selectedIcon: Icon(Icons.task_alt),
               label: 'Tasks',
             ),
-            BottomNavigationBarItem(
-              icon: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: AppColors.aiGradient,
-                ).createShader(bounds),
-                child:
-                    const Icon(Icons.auto_awesome, color: Colors.white),
-              ),
-              label: _titles[3],
+            NavigationDestination(
+              icon: _AiIcon(),
+              selectedIcon: _AiIcon(),
+              label: 'RYSE AI',
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.menu),
+            const NavigationDestination(
+              icon: Icon(Icons.grid_view_outlined),
+              selectedIcon: Icon(Icons.grid_view),
               label: 'Menu',
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The AI tab keeps the brand gradient in every state.
+class _AiIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (bounds) =>
+          const LinearGradient(colors: AppColors.aiGradient).createShader(bounds),
+      child: const Icon(Icons.auto_awesome, color: Colors.white),
     );
   }
 }
