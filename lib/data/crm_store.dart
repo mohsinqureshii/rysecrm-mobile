@@ -48,6 +48,12 @@ class CrmStore extends ChangeNotifier {
   CrmStore({this.currentUserName = 'Maq Qureshi'});
 
   static const _storageKey = 'ryse_crm_data_v1';
+
+  /// Notes and attachments are a client-side layer kept in their own key so
+  /// they survive both local and server-backed sessions (in server mode the
+  /// record data is the server's, but these extras stay device-local until the
+  /// backend sync for `notes`/`files` is enabled).
+  static const _extrasKey = 'ryse_crm_extras_v1';
   static const _uuid = Uuid();
 
   final String currentUserName;
@@ -59,6 +65,8 @@ class CrmStore extends ChangeNotifier {
   List<TaskItem> _tasks = [];
   List<ActivityLog> _activities = [];
   List<AppNotification> _notifications = [];
+  List<Note> _notes = [];
+  List<Attachment> _attachments = [];
 
   bool _loaded = false;
   bool get isLoaded => _loaded;
@@ -83,6 +91,8 @@ class CrmStore extends ChangeNotifier {
   List<TaskItem> get tasks => List.unmodifiable(_tasks);
   List<ActivityLog> get activities => List.unmodifiable(_activities);
   List<AppNotification> get notifications => List.unmodifiable(_notifications);
+  List<Note> get notes => List.unmodifiable(_notes);
+  List<Attachment> get attachments => List.unmodifiable(_attachments);
 
   String newId() => _uuid.v4();
 
@@ -104,6 +114,7 @@ class CrmStore extends ChangeNotifier {
 
   Future<void> load() async {
     if (_loaded) return;
+    await _loadExtras();
     if (_api != null) {
       await _loadFromServer();
       return;
@@ -163,6 +174,31 @@ class CrmStore extends ChangeNotifier {
         'opportunities': _opportunities.map((e) => e.toJson()).toList(),
         'tasks': _tasks.map((e) => e.toJson()).toList(),
         'activities': _activities.map((e) => e.toJson()).toList(),
+      }),
+    );
+  }
+
+  Future<void> _loadExtras() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_extrasKey);
+    if (raw == null) return;
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      _notes = _decodeList(data['notes'], Note.fromJson);
+      _attachments = _decodeList(data['attachments'], Attachment.fromJson);
+    } catch (_) {
+      _notes = [];
+      _attachments = [];
+    }
+  }
+
+  Future<void> _persistExtras() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _extrasKey,
+      jsonEncode({
+        'notes': _notes.map((e) => e.toJson()).toList(),
+        'attachments': _attachments.map((e) => e.toJson()).toList(),
       }),
     );
   }
@@ -961,6 +997,119 @@ class CrmStore extends ChangeNotifier {
     notifyListeners();
     if (isServerBacked) {
       unawaited(_api!.notificationMarkAllRead().catchError((_) {}));
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Notes (per record)
+  // -------------------------------------------------------------------------
+
+  /// Notes for a record, pinned first then most-recently updated.
+  List<Note> notesForRecord(RecordType type, String id) {
+    final list = _notes
+        .where((n) => n.relatedType == type && n.relatedId == id)
+        .toList()
+      ..sort((a, b) {
+        if (a.pinned != b.pinned) return a.pinned ? -1 : 1;
+        return b.updatedAt.compareTo(a.updatedAt);
+      });
+    return list;
+  }
+
+  void addNote(Note note) {
+    _notes.insert(0, note);
+    _logActivity(
+      kind: ActivityKind.note,
+      title: 'Note added${note.title.isEmpty ? '' : ': ${note.title}'}',
+      detail: note.body,
+      relatedType: note.relatedType,
+      relatedId: note.relatedId,
+    );
+    notifyListeners();
+    _persistExtras();
+    if (isServerBacked) {
+      final recordId = _backendId(note.relatedId);
+      if (recordId != null) {
+        unawaited(_api!
+            .noteCreate({
+              'recordType': note.relatedType.name,
+              'recordId': recordId,
+              if (note.title.isNotEmpty) 'title': note.title,
+              'body': note.body,
+              'pinned': note.pinned,
+            })
+            .catchError((_) => <String, dynamic>{}));
+      }
+    }
+  }
+
+  void updateNote(Note note) {
+    final index = _notes.indexWhere((n) => n.id == note.id);
+    if (index == -1) return;
+    _notes[index] = note;
+    notifyListeners();
+    _persistExtras();
+    if (isServerBacked) {
+      final backendId = _backendId(note.id);
+      if (backendId != null) {
+        unawaited(_api!
+            .noteUpdate({
+              'id': backendId,
+              'title': note.title,
+              'body': note.body,
+              'pinned': note.pinned,
+            })
+            .catchError((_) {}));
+      }
+    }
+  }
+
+  void togglePinNote(Note note) =>
+      updateNote(note.copyWith(pinned: !note.pinned));
+
+  void deleteNote(String id) {
+    _notes.removeWhere((n) => n.id == id);
+    notifyListeners();
+    _persistExtras();
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId != null) {
+        unawaited(_api!.noteDelete(backendId).catchError((_) {}));
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Attachments / files (per record)
+  // -------------------------------------------------------------------------
+
+  List<Attachment> attachmentsForRecord(RecordType type, String id) => _attachments
+      .where((a) => a.relatedType == type && a.relatedId == id)
+      .toList()
+    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  void addAttachment(Attachment attachment) {
+    _attachments.insert(0, attachment);
+    _logActivity(
+      kind: ActivityKind.note,
+      title: '${attachment.kind == AttachmentKind.link ? 'Link' : 'File'} '
+          'attached: ${attachment.name}',
+      relatedType: attachment.relatedType,
+      relatedId: attachment.relatedId,
+    );
+    notifyListeners();
+    _persistExtras();
+  }
+
+  void deleteAttachment(String id) {
+    _attachments.removeWhere((a) => a.id == id);
+    notifyListeners();
+    _persistExtras();
+    if (isServerBacked) {
+      final backendId = _backendId(id);
+      if (backendId != null) {
+        unawaited(_api!.fileDelete(backendId).catchError((_) {}));
+      }
     }
   }
 

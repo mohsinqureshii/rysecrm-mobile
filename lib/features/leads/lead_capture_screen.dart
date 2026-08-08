@@ -7,6 +7,7 @@ import '../../data/models/models.dart';
 import '../../data/services/auth_provider.dart';
 import '../shared/form_widgets.dart';
 import 'lead_form_screen.dart';
+import 'lead_scan.dart';
 
 /// Fast, focused lead-capture flow reachable from the home screen. New leads
 /// are written through [CrmStore.addLead], which syncs to the live backend
@@ -58,6 +59,80 @@ class _LeadCaptureScreenState extends State<LeadCaptureScreen> {
       c.dispose();
     }
     super.dispose();
+  }
+
+  /// Fill the form from a parsed scan/QR result and tell the user what landed.
+  void _applyParsed(ParsedLead parsed, String source) {
+    if (parsed.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Couldn't read a contact from that $source.")),
+      );
+      return;
+    }
+    setState(() {
+      if (parsed.firstName.isNotEmpty) _firstName.text = parsed.firstName;
+      if (parsed.lastName.isNotEmpty) _lastName.text = parsed.lastName;
+      if (parsed.company.isNotEmpty) _company.text = parsed.company;
+      if (parsed.title.isNotEmpty) _title.text = parsed.title;
+      if (parsed.email.isNotEmpty) _email.text = parsed.email;
+      if (parsed.phone.isNotEmpty) _phone.text = parsed.phone;
+      if (parsed.website.isNotEmpty) _website.text = parsed.website;
+      if (parsed.city.isNotEmpty) _city.text = parsed.city;
+      if (parsed.country.isNotEmpty) _country.text = parsed.country;
+      if (_source == 'Web') _source = 'Event';
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Scanned — review the details and save.')),
+    );
+  }
+
+  Future<void> _scanCard() async {
+    final text = await _pasteDialog(
+      title: 'Scan business card',
+      hint: 'Paste the card text (on device, the camera reads it for you):\n\n'
+          'Jordan Lee\nVP of Sales\nAcme Technologies\n'
+          'jordan@acme.com\n+1 415 555 0199',
+    );
+    if (text == null || text.trim().isEmpty) return;
+    _applyParsed(parseBusinessCard(text), 'card');
+  }
+
+  Future<void> _scanQr() async {
+    final text = await _pasteDialog(
+      title: 'Scan QR / vCard',
+      hint: 'Paste a QR or vCard payload (on device, point the camera at it):\n\n'
+          'BEGIN:VCARD\nFN:Jordan Lee\nORG:Acme\nEMAIL:jordan@acme.com\n'
+          'END:VCARD',
+    );
+    if (text == null || text.trim().isEmpty) return;
+    _applyParsed(parseVCard(text), 'code');
+  }
+
+  Future<String?> _pasteDialog({required String title, required String hint}) {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          maxLines: 6,
+          autofocus: true,
+          decoration: InputDecoration(hintText: hint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(controller.text),
+            child: const Text('Parse'),
+          ),
+        ],
+      ),
+    );
   }
 
   int _estimateScore(double revenue) {
@@ -132,6 +207,26 @@ class _LeadCaptureScreenState extends State<LeadCaptureScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             _SyncBadge(live: live),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _saving ? null : _scanCard,
+                    icon: const Icon(Icons.document_scanner_outlined, size: 18),
+                    label: const Text('Scan card'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _saving ? null : _scanQr,
+                    icon: const Icon(Icons.qr_code_scanner, size: 18),
+                    label: const Text('Scan QR'),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 4),
             const FormSectionLabel('Contact'),
             Row(

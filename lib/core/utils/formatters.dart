@@ -14,6 +14,7 @@ class Formatters {
   static final DateFormat _date = DateFormat('MMM d, yyyy');
   static final DateFormat _dateShort = DateFormat('MMM d');
   static final DateFormat _time = DateFormat('h:mm a');
+  static final DateFormat _fileStamp = DateFormat('yyyy-MM-dd-HHmm');
 
   static String currency(num value) => _currency.format(value);
 
@@ -24,6 +25,9 @@ class Formatters {
   static String dateShort(DateTime value) => _dateShort.format(value);
 
   static String time(DateTime value) => _time.format(value);
+
+  /// Filename-safe timestamp, e.g. "2026-08-08-1432".
+  static String fileStamp(DateTime value) => _fileStamp.format(value);
 
   /// Relative label like "2h ago", "Yesterday", or a short date.
   static String relative(DateTime value) {

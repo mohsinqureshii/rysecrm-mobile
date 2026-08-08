@@ -8,6 +8,7 @@ import '../contacts/contact_form_screen.dart';
 import '../leads/lead_form_screen.dart';
 import '../opportunities/opportunity_form_screen.dart';
 import '../tasks/task_form_screen.dart';
+import 'quick_add.dart';
 
 /// Global "+" sheet: create any record type from anywhere.
 void showCreateSheet(BuildContext context) {
@@ -53,6 +54,33 @@ void showCreateSheet(BuildContext context) {
                   ),
                 ),
               ),
+              ListTile(
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  showQuickAddSheet(context);
+                },
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: AppColors.aiGradient),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(Icons.bolt, color: Colors.white, size: 22),
+                ),
+                title: const Text(
+                  'Quick add',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                ),
+                subtitle: const Text(
+                  'Type a task in plain English',
+                  style:
+                      TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                ),
+                trailing:
+                    const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+              ),
+              const Divider(indent: 20, endIndent: 20, height: 8),
               _CreateTile(
                 type: RecordType.lead,
                 subtitle: 'Someone who may become a customer',

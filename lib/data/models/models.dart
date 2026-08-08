@@ -861,3 +861,174 @@ class ChatMessage {
   final DateTime timestamp;
   final List<String> suggestions;
 }
+
+// ---------------------------------------------------------------------------
+// Note (first-class, per-record — mirrors the backend `notes` router)
+// ---------------------------------------------------------------------------
+
+class Note {
+  const Note({
+    required this.id,
+    this.title = '',
+    required this.body,
+    this.pinned = false,
+    required this.relatedType,
+    required this.relatedId,
+    this.authorName = '',
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String title;
+  final String body;
+  final bool pinned;
+  final RecordType relatedType;
+  final String relatedId;
+  final String authorName;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Note copyWith({
+    String? title,
+    String? body,
+    bool? pinned,
+    DateTime? updatedAt,
+  }) {
+    return Note(
+      id: id,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      pinned: pinned ?? this.pinned,
+      relatedType: relatedType,
+      relatedId: relatedId,
+      authorName: authorName,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'body': body,
+        'pinned': pinned,
+        'relatedType': relatedType.label,
+        'relatedId': relatedId,
+        'authorName': authorName,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory Note.fromJson(Map<String, dynamic> json) => Note(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? '',
+        body: json['body'] as String? ?? '',
+        pinned: json['pinned'] as bool? ?? false,
+        relatedType:
+            RecordType.fromLabel(json['relatedType'] as String? ?? 'Lead'),
+        relatedId: json['relatedId'] as String? ?? '',
+        authorName: json['authorName'] as String? ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+      );
+}
+
+// ---------------------------------------------------------------------------
+// Attachment / File (per-record — mirrors the backend `files` router)
+// ---------------------------------------------------------------------------
+
+enum AttachmentKind {
+  pdf('PDF', Icons.picture_as_pdf_outlined, AppColors.errorBright),
+  image('Image', Icons.image_outlined, AppColors.info),
+  doc('Document', Icons.description_outlined, AppColors.brandAccent),
+  sheet('Spreadsheet', Icons.table_chart_outlined, AppColors.success),
+  slide('Presentation', Icons.slideshow_outlined, AppColors.warning),
+  link('Link', Icons.link, AppColors.contact),
+  other('File', Icons.insert_drive_file_outlined, AppColors.textSecondary);
+
+  const AttachmentKind(this.label, this.icon, this.color);
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  static AttachmentKind fromName(String name) =>
+      AttachmentKind.values.firstWhere(
+        (k) => k.name == name,
+        orElse: () => AttachmentKind.other,
+      );
+
+  /// Infer a kind from a filename extension.
+  static AttachmentKind fromFileName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.pdf')) return AttachmentKind.pdf;
+    if (lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.heic') ||
+        lower.endsWith('.gif')) {
+      return AttachmentKind.image;
+    }
+    if (lower.endsWith('.doc') || lower.endsWith('.docx')) {
+      return AttachmentKind.doc;
+    }
+    if (lower.endsWith('.xls') ||
+        lower.endsWith('.xlsx') ||
+        lower.endsWith('.csv')) {
+      return AttachmentKind.sheet;
+    }
+    if (lower.endsWith('.ppt') || lower.endsWith('.pptx')) {
+      return AttachmentKind.slide;
+    }
+    return AttachmentKind.other;
+  }
+}
+
+class Attachment {
+  const Attachment({
+    required this.id,
+    required this.name,
+    this.kind = AttachmentKind.other,
+    this.sizeLabel = '',
+    this.url = '',
+    required this.relatedType,
+    required this.relatedId,
+    this.addedByName = '',
+    required this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final AttachmentKind kind;
+  final String sizeLabel;
+  final String url;
+  final RecordType relatedType;
+  final String relatedId;
+  final String addedByName;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'kind': kind.name,
+        'sizeLabel': sizeLabel,
+        'url': url,
+        'relatedType': relatedType.label,
+        'relatedId': relatedId,
+        'addedByName': addedByName,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory Attachment.fromJson(Map<String, dynamic> json) => Attachment(
+        id: json['id'] as String,
+        name: json['name'] as String? ?? '',
+        kind: AttachmentKind.fromName(json['kind'] as String? ?? 'other'),
+        sizeLabel: json['sizeLabel'] as String? ?? '',
+        url: json['url'] as String? ?? '',
+        relatedType:
+            RecordType.fromLabel(json['relatedType'] as String? ?? 'Lead'),
+        relatedId: json['relatedId'] as String? ?? '',
+        addedByName: json['addedByName'] as String? ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      );
+}

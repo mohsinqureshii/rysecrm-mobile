@@ -6,6 +6,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/widgets/common.dart';
 import '../../data/crm_store.dart';
 import '../../data/models/models.dart';
+import '../shared/notes_files.dart';
 import '../shared/record_widgets.dart';
 import '../shell/record_nav.dart';
 import 'opportunity_form_screen.dart';
@@ -343,13 +344,18 @@ class _DetailsTab extends StatelessWidget {
           ],
         ),
         if (opportunity.notes.isNotEmpty) ...[
-          const SectionHeader(title: 'Notes'),
+          const SectionHeader(title: 'Description'),
           FieldCard(
             children: [
-              DetailFieldRow(label: 'Notes', value: opportunity.notes),
+              DetailFieldRow(label: 'Summary', value: opportunity.notes),
             ],
           ),
         ],
+        RecordNotesFiles(
+          relatedType: RecordType.opportunity,
+          relatedId: opportunity.id,
+          relatedName: opportunity.name,
+        ),
       ],
     );
   }

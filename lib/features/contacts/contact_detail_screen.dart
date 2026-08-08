@@ -6,6 +6,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/widgets/common.dart';
 import '../../data/crm_store.dart';
 import '../../data/models/models.dart';
+import '../shared/notes_files.dart';
 import '../shared/record_widgets.dart';
 import '../shell/record_nav.dart';
 import 'contact_form_screen.dart';
@@ -192,16 +193,21 @@ class ContactDetailScreen extends StatelessWidget {
                         ],
                       ),
                       if (contact.notes.isNotEmpty) ...[
-                        const SectionHeader(title: 'Notes'),
+                        const SectionHeader(title: 'Description'),
                         FieldCard(
                           children: [
                             DetailFieldRow(
-                              label: 'Notes',
+                              label: 'Summary',
                               value: contact.notes,
                             ),
                           ],
                         ),
                       ],
+                      RecordNotesFiles(
+                        relatedType: RecordType.contact,
+                        relatedId: contact.id,
+                        relatedName: contact.name,
+                      ),
                     ],
                   ),
                   _RelatedTab(contact: contact),

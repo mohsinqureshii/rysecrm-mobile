@@ -203,4 +203,68 @@ class RyseApi {
 
   Future<Map<String, dynamic>> searchGlobal(String query) async =>
       _asMap(await client.query('search.global', input: {'query': query}));
+
+  // ─── Notes ───────────────────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> notesList(
+    String recordType,
+    int recordId,
+  ) async {
+    final data = await client.query('notes.list', input: {
+      'recordType': recordType,
+      'recordId': recordId,
+    });
+    return _asList(data);
+  }
+
+  Future<Map<String, dynamic>> noteCreate(Map<String, dynamic> input) async =>
+      _asMap(await client.mutate('notes.create', input: input));
+
+  Future<void> noteUpdate(Map<String, dynamic> input) =>
+      client.mutate('notes.update', input: input);
+
+  Future<void> noteDelete(int id) =>
+      client.mutate('notes.delete', input: {'id': id});
+
+  Future<void> noteTogglePin(int id) =>
+      client.mutate('notes.togglePin', input: {'id': id});
+
+  // ─── Files / attachments ─────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> filesList(
+    String recordType,
+    int recordId,
+  ) async {
+    final data = await client.query('files.list', input: {
+      'recordType': recordType,
+      'recordId': recordId,
+    });
+    return _asList(data);
+  }
+
+  Future<void> fileDelete(int id) =>
+      client.mutate('files.delete', input: {'id': id});
+
+  // ─── Quick add (natural-language capture) ────────────────────────────────
+
+  Future<Map<String, dynamic>> quickAddParse(String text) async =>
+      _asMap(await client.mutate('quickAdd.parse', input: {'text': text}));
+
+  Future<Map<String, dynamic>> quickAddCreate(
+          Map<String, dynamic> input) async =>
+      _asMap(await client.mutate('quickAdd.create', input: input));
+
+  // ─── Lead capture (business card / QR) ───────────────────────────────────
+
+  Future<Map<String, dynamic>> leadCaptureParseCard(String imageData) async =>
+      _asMap(await client.mutate('leadCapture.parseCard',
+          input: {'image': imageData}));
+
+  Future<Map<String, dynamic>> leadCaptureParseQr(String payload) async =>
+      _asMap(
+          await client.mutate('leadCapture.parseQr', input: {'data': payload}));
+
+  Future<Map<String, dynamic>> leadCaptureCreate(
+          Map<String, dynamic> input) async =>
+      _asMap(await client.mutate('leadCapture.create', input: input));
 }
