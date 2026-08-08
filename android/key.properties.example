@@ -1,0 +1,12 @@
+# Android release signing — copy to `android/key.properties` and fill in.
+# This file (the real key.properties) is git-ignored and must NEVER be committed.
+#
+# Create an upload keystore first:
+#   keytool -genkey -v -keystore ~/ryse-upload-keystore.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Then point these at it:
+storePassword=CHANGEME
+keyPassword=CHANGEME
+keyAlias=upload
+storeFile=/absolute/path/to/ryse-upload-keystore.jks

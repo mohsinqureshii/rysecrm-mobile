@@ -8,6 +8,18 @@ a sales Path, Kanban pipeline, and an Einstein-style AI copilot.
   <em>Android · iOS · 100% offline demo (no backend required)</em>
 </p>
 
+## 📸 Screenshots
+
+| Login | Dashboard | Pipeline (Kanban) | Leads |
+|---|---|---|---|
+| ![Login](docs/screenshots/01_login.png) | ![Dashboard](docs/screenshots/02_dashboard.png) | ![Pipeline](docs/screenshots/03_pipeline.png) | ![Leads](docs/screenshots/04_leads.png) |
+
+| Opportunity (Sales Path) | Lead detail | RYSE AI | Tasks |
+|---|---|---|---|
+| ![Opportunity](docs/screenshots/05_opportunity.png) | ![Lead](docs/screenshots/06_lead_detail.png) | ![Assistant](docs/screenshots/07_assistant.png) | ![Tasks](docs/screenshots/08_tasks.png) |
+
+_Regenerate any time: `flutter test test/screenshots/screenshots_test.dart --update-goldens`_
+
 ## ✨ Features
 
 ### Authentication

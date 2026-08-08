@@ -6,6 +6,11 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
+  /// Single source of truth for the app's typeface. Applied to the base text
+  /// theme *and* every component text style below, so typography is identical
+  /// across Android and iOS (component styles don't inherit the base family).
+  static const String fontFamily = 'Roboto';
+
   static ThemeData get light {
     final base = ThemeData(
       useMaterial3: true,
@@ -17,7 +22,7 @@ class AppTheme {
         surface: AppColors.surface,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      fontFamily: 'Roboto',
+      fontFamily: fontFamily,
     );
 
     return base.copyWith(
@@ -28,6 +33,7 @@ class AppTheme {
         centerTitle: false,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -57,7 +63,11 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -68,13 +78,21 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.brand,
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -108,6 +126,7 @@ class AppTheme {
         selectedColor: AppColors.cloud,
         side: const BorderSide(color: AppColors.borderStrong),
         labelStyle: const TextStyle(
+          fontFamily: fontFamily,
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
@@ -119,8 +138,13 @@ class AppTheme {
         unselectedLabelColor: AppColors.textSecondary,
         indicatorColor: AppColors.brand,
         indicatorSize: TabBarIndicatorSize.tab,
-        labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        labelStyle: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
         unselectedLabelStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -131,10 +155,12 @@ class AppTheme {
         unselectedItemColor: AppColors.textTertiary,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 11,
           fontWeight: FontWeight.w700,
         ),
         unselectedLabelStyle: TextStyle(
+          fontFamily: fontFamily,
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
@@ -146,7 +172,11 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.navyLight,
-        contentTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        contentTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          color: Colors.white,
+          fontSize: 14,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       listTileTheme: const ListTileThemeData(
