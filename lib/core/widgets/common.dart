@@ -3,6 +3,39 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 
+/// A filter/segment chip whose label flips to white when selected (near-black
+/// pill), keeping the label readable — the app's standard filter control.
+class AppFilterChip extends StatelessWidget {
+  const AppFilterChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+    this.avatar,
+  });
+
+  final String label;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
+  final Widget? avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(label),
+      avatar: avatar,
+      selected: selected,
+      onSelected: onSelected,
+      showCheckmark: false,
+      labelStyle: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: selected ? Colors.white : AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
 /// SLDS-style record icon: rounded square with a white glyph.
 class RecordIcon extends StatelessWidget {
   const RecordIcon({

@@ -68,15 +68,15 @@ class _LeadsScreenState extends State<LeadsScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               children: [
-                FilterChip(
-                  label: const Text('All'),
+                AppFilterChip(
+                  label: 'All',
                   selected: _statusFilter == null,
                   onSelected: (_) => setState(() => _statusFilter = null),
                 ),
                 const SizedBox(width: 8),
                 for (final status in LeadStatus.values) ...[
-                  FilterChip(
-                    label: Text(status.label),
+                  AppFilterChip(
+                    label: status.label,
                     selected: _statusFilter == status,
                     onSelected: (_) => setState(
                       () => _statusFilter =

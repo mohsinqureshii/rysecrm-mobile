@@ -132,12 +132,21 @@ class AppTheme {
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.ink,
+        checkmarkColor: Colors.white,
+        showCheckmark: false,
         side: const BorderSide(color: AppColors.border),
         labelStyle: const TextStyle(
           fontFamily: fontFamily,
           fontSize: 13,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+        ),
+        // Selected chips are near-black; their label must flip to white.
+        secondaryLabelStyle: const TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),

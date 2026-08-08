@@ -156,11 +156,19 @@ Future<void> showLogInteractionSheet(
                     ])
                       ChoiceChip(
                         label: Text(option.label),
+                        showCheckmark: false,
+                        labelStyle: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: kind == option
+                              ? Colors.white
+                              : AppColors.textPrimary,
+                        ),
                         avatar: Icon(
                           option.icon,
                           size: 16,
                           color: kind == option
-                              ? AppColors.brand
+                              ? Colors.white
                               : AppColors.textTertiary,
                         ),
                         selected: kind == option,

@@ -72,8 +72,8 @@ class _TasksScreenState extends State<TasksScreen> {
                   (_TaskFilter.completed, 'Completed'),
                   (_TaskFilter.all, 'All'),
                 ]) ...[
-                  FilterChip(
-                    label: Text(label),
+                  AppFilterChip(
+                    label: label,
                     selected: _filter == filter,
                     onSelected: (_) => setState(() => _filter = filter),
                   ),

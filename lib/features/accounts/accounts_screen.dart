@@ -69,8 +69,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               children: [
                 for (final type in [null, 'Customer', 'Prospect', 'Partner']) ...[
-                  FilterChip(
-                    label: Text(type ?? 'All'),
+                  AppFilterChip(
+                    label: type ?? 'All',
                     selected: _typeFilter == type,
                     onSelected: (_) => setState(() => _typeFilter = type),
                   ),

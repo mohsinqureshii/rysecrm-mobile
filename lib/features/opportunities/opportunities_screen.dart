@@ -92,8 +92,8 @@ class _OpportunitiesScreenState extends State<OpportunitiesScreen> {
                   (_OppFilter.lost, 'Lost'),
                   (_OppFilter.all, 'All'),
                 ]) ...[
-                  FilterChip(
-                    label: Text(label),
+                  AppFilterChip(
+                    label: label,
                     selected: _filter == filter,
                     onSelected: (_) => setState(() => _filter = filter),
                   ),
